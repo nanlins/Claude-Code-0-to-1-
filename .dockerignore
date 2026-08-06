@@ -25,3 +25,4 @@ pgvector.html
 docs/
 tests/
 .github/
+.dockerignore：Docker 构建排除规则
