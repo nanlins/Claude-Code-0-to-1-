@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1400" style="background:#262a29">
+  <!--
+    小锤 Anvil 吉祥物 —— 愤怒锤头 + 无辜笑脸（反差萌）
+    矢量多边形描边 + 粗糙喷溅滤镜（8-bit 印章质感）
+    结构：锤头(骂人气泡 [ # # *) → 断柄(2形钩+竖条+分叉) → 脸(o o + ‿ + 点)
+  -->
+  <defs>
+    <!-- 粗糙喷溅：粗位移(撕边) + 膨胀(加粗) + 细位移(像素颗粒) -->
+    <filter id="rough" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence type="turbulence" baseFrequency="0.05" numOctaves="4" seed="8" result="coarse"/>
+      <feDisplacementMap in="SourceGraphic" in2="coarse" scale="26" result="d1"/>
+      <feMorphology in="d1" operator="dilate" radius="2" result="fat"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.5" numOctaves="2" seed="4" result="fine"/>
+      <feDisplacementMap in="fat" in2="fine" scale="9"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#rough)" fill="none" stroke="#f2e63c"
+       stroke-linecap="square" stroke-linejoin="miter">
+
+    <!-- 1 锤头：骂人气泡轮廓（斜椭圆、点状虚线） -->
+    <ellipse cx="400" cy="430" rx="270" ry="190"
+             transform="rotate(-18 400 430)"
+             stroke-width="16" stroke-dasharray="3 14"/>
+
+    <!-- 2 左端粗括号 [ （打击面，最粗最实） -->
+    <path d="M175 420 q-55 130 55 275 q45 45 100 30" stroke-width="80"/>
+
+    <!-- 3 内部符号：# # *（多边形描边，粗壮） -->
+    <!-- 第一个 # -->
+    <path d="M305 375 V565 M365 365 V555 M262 430 H405 M256 498 H400" stroke-width="44"/>
+    <!-- 第二个 # -->
+    <path d="M475 320 V510 M535 310 V500 M432 375 H575 M426 443 H570" stroke-width="44"/>
+    <!-- 星号 *（冲出气泡右上角） -->
+    <path d="M660 235 V425 M578 282 L742 378 M742 282 L578 378" stroke-width="48"/>
+
+    <!-- 4 断柄：2形弯钩 + 竖条 + 分叉两块，40° 斜排 -->
+    <path d="M470 610 q70 -70 70 -25 q0 45 -70 100 l70 0" stroke-width="46"/>
+    <path d="M575 755 l-12 130" stroke-width="46"/>
+    <path d="M545 925 l25 130" stroke-width="46"/>
+    <path d="M662 900 l25 140" stroke-width="46"/>
+    <!-- 左分叉三角（实心） -->
+    <path d="M540 925 l62 6 l-34 128 z" fill="#f2e63c" stroke="none"/>
+
+    <!-- 5 脸：oo 眼(空心+瞳点) + 鼻点 + ‿ 嘴 -->
+    <circle cx="700" cy="985" r="62" stroke-width="36"/>
+    <circle cx="856" cy="975" r="62" stroke-width="36"/>
+    <!-- 瞳孔：左眼中、右眼偏右上 -->
+    <circle cx="700" cy="990" r="17" fill="#f2e63c" stroke="none"/>
+    <circle cx="868" cy="952" r="17" fill="#f2e63c" stroke="none"/>
+    <!-- 鼻点 -->
+    <circle cx="688" cy="1102" r="25" fill="#f2e63c" stroke="none"/>
+    <!-- ‿ 微笑（右端上挑） -->
+    <path d="M715 1128 q78 58 152 -38" stroke-width="32"/>
+  </g>
+</svg>

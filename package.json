@@ -13,7 +13,6 @@
   "scripts": {
     "start": "tsx src/main.ts",
     "dev": "tsx watch src/main.ts",
-    "web": "tsx src/web-server.ts",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",

@@ -1,48 +1,23 @@
-# 手搓 Claude Code (Anvil) - Docker Compose 编排（面试部署版）
+# 手搓 Claude Code (Anvil) - Docker Compose 编排（基础设施版）
 #
-# 一键启动完整栈：App + Redis + PostgreSQL(pgvector)
+# 终端版应用运行在宿主机（npm start / anvil），Docker 只提供基础设施：
+#   Redis（缓存+限流） + PostgreSQL(pgvector)（向量/业务存储）
 #
 # 端口说明（避开本机已有的 WSL Redis:6379 / 本地 PostgreSQL:5432）：
-#   anvil    :5173  Web UI
-#   redis    :6380  Redis 宿主机访问（容器内部用 redis:6379）
-#   postgres :5434  PostgreSQL 宿主机访问（容器内部用 postgres:5432）
+#   redis    :6380  宿主机访问（容器内部 redis:6379）
+#   postgres :5434  宿主机访问（容器内部 postgres:5432）
 #
 # 用法：
-#   docker-compose up -d --build    # 构建并启动
-#   http://localhost:5173            # 访问 Web UI
-#   docker-compose logs -f anvil     # 查看日志
-#   docker-compose down              # 停止
+#   docker-compose up -d          # 启动 redis + postgres
+#   docker-compose down           # 停止
+#
+# 终端应用连接（.env）：
+#   REDIS_URL=redis://localhost:6380
+#   PG_CONNECTION_STRING=postgres://postgres:491220@localhost:5434/ai_agent
 
 version: '3.8'
 
 services:
-  # ---------- 应用服务 ----------
-  anvil:
-    build: .
-    container_name: anvil-app
-    ports:
-      - "5173:5173"
-    environment:
-      - NODE_ENV=production
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL:-https://api.deepseek.com/anthropic}
-      - MODEL_ID=${MODEL_ID:-deepseek-v4-flash}
-      - PERMISSION_MODE=${PERMISSION_MODE:-auto}
-      # 容器内部网络连接（不经宿主机端口，不受 WSL/本地冲突影响）
-      - REDIS_URL=redis://redis:6379
-      - PG_CONNECTION_STRING=postgres://postgres:491220@postgres:5432/ai_agent
-      - VECTOR_STORE=pg
-    depends_on:
-      redis:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
-    volumes:
-      - anvil_data:/app/data
-    restart: unless-stopped
-    networks:
-      - anvil-net
-
   # ---------- Redis（缓存+限流） ----------
   redis:
     image: redis:7-alpine
@@ -84,7 +59,6 @@ services:
       - anvil-net
 
 volumes:
-  anvil_data:
   redis_data:
   postgres_data:
 
