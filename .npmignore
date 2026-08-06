@@ -19,3 +19,4 @@ hello.md
 hello-deepseek.py
 demo.md
 pgvector.html
+.npmignore：npm 发布排除规则
