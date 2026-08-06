@@ -1,0 +1,58 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  IMAGE_NAME: claudecode-anvil
+
+jobs:
+  # ---------- CI: 测试 + 类型检查 + 构建 ----------
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 类型检查
+        run: npm run typecheck
+
+      - name: 单元测试
+        run: npm test
+
+      - name: 构建
+        run: npm run build
+
+  # ---------- CD: 构建 Docker 镜像并推送 ----------
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+    # 只在 main 分支 push 时构建镜像
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 构建 Docker 镜像
+        run: docker build -t $IMAGE_NAME:${{ github.sha }} -t $IMAGE_NAME:latest .
+
+      # 如需推送到 Docker Hub / GHCR，配置 secrets 后取消注释
+      # - name: 登录 GHCR
+      #   uses: docker/login-action@v3
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.actor }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+      #
+      # - name: 推送镜像
+      #   run: |
+      #     docker tag $IMAGE_NAME ghcr.io/${{ github.repository }}/$IMAGE_NAME:latest
+      #     docker push ghcr.io/${{ github.repository }}/$IMAGE_NAME:latest

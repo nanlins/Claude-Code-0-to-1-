@@ -1,0 +1,99 @@
+/**
+ * 配置加载 —— 单个来源：环境变量 + .env（dotenv）。
+ * 支持任意 Anthropic 兼容端点（DeepSeek / GLM / Kimi / DashScope 只需改 baseUrl）。
+ */
+import 'dotenv/config';
+import path from 'node:path';
+import type { PermissionMode } from './types.js';
+
+export interface AppConfig {
+  apiKey: string;
+  baseUrl: string;
+  model: string;
+  fallbackModel?: string;
+  permissionMode: PermissionMode;
+  sandboxCmd?: string;
+  maxTokens: number;
+  compactThresholdChars: number;
+  maxToolOutputChars: number;
+  workspaceDir: string;
+  mock: boolean;
+  /** 采样参数（可选）。 */
+  temperature?: number;
+  topP?: number;
+  stopSequences?: string[];
+  /** RAG: embedding 与向量存储配置（可选，缺省用本地兜底）。 */
+  embeddingBaseUrl?: string;
+  embeddingApiKey?: string;
+  embeddingModel?: string;
+  vectorStore?: 'memory' | 'pg';
+  pgConnectionString?: string;
+  /** YoloClassifier：auto 模式下 LLM 自动审批安全操作（YOLO=1 启用）。 */
+  yolo?: boolean;
+  /** Redis 连接 URL（REDIS_URL）。 */
+  redisUrl?: string;
+  /** 多模型路由：flash 模型（简单任务）。 */
+  flashModelId?: string;
+  /** 多模型路由：pro 模型（复杂任务）。 */
+  proModelId?: string;
+  /** Docker 沙箱：命令容器执行（DOCKER_SANDBOX=1 启用）。 */
+  dockerSandbox?: boolean;
+}
+
+function envStr(name: string, fallback = ''): string {
+  const v = process.env[name];
+  return v === undefined || v === '' ? fallback : v;
+}
+
+function envBool(name: string): boolean {
+  return ['1', 'true', 'yes'].includes((process.env[name] ?? '').toLowerCase());
+}
+
+function envInt(name: string, fallback: number): number {
+  const n = Number(process.env[name]);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+export function loadConfig(overrides: Partial<AppConfig> = {}): AppConfig {
+  const cfg: AppConfig = {
+    apiKey: overrides.apiKey ?? envStr('ANTHROPIC_API_KEY'),
+    baseUrl: overrides.baseUrl ?? envStr('ANTHROPIC_BASE_URL', 'https://api.anthropic.com'),
+    model: overrides.model ?? envStr('MODEL_ID', 'claude-sonnet-4-6'),
+    fallbackModel: overrides.fallbackModel ?? (envStr('FALLBACK_MODEL_ID') || undefined),
+    permissionMode: overrides.permissionMode ?? (envStr('PERMISSION_MODE', 'ask') as PermissionMode),
+    sandboxCmd: overrides.sandboxCmd ?? (envStr('SANDBOX_CMD') || undefined),
+    maxTokens: overrides.maxTokens ?? envInt('MAX_TOKENS', 8192),
+    compactThresholdChars: overrides.compactThresholdChars ?? envInt('COMPACT_THRESHOLD_CHARS', 50000),
+    maxToolOutputChars: overrides.maxToolOutputChars ?? envInt('MAX_TOOL_OUTPUT_CHARS', 50000),
+    workspaceDir: path.resolve(overrides.workspaceDir ?? envStr('HARNESS_CWD', process.cwd())),
+    mock: overrides.mock ?? envBool('MOCK'),
+    temperature: overrides.temperature ?? envFloat('TEMPERATURE'),
+    topP: overrides.topP ?? envFloat('TOP_P'),
+    stopSequences: overrides.stopSequences ?? envList('STOP_SEQUENCES'),
+    embeddingBaseUrl: overrides.embeddingBaseUrl ?? (envStr('EMBEDDING_BASE_URL') || undefined),
+    embeddingApiKey: overrides.embeddingApiKey ?? (envStr('EMBEDDING_API_KEY') || undefined),
+    embeddingModel: overrides.embeddingModel ?? (envStr('EMBEDDING_MODEL') || undefined),
+    vectorStore: overrides.vectorStore ?? (envStr('VECTOR_STORE', 'memory') as 'memory' | 'pg'),
+    pgConnectionString: overrides.pgConnectionString ?? (envStr('PG_CONNECTION_STRING') || undefined),
+    yolo: overrides.yolo ?? envBool('YOLO'),
+    redisUrl: overrides.redisUrl ?? (envStr('REDIS_URL') || undefined),
+    flashModelId: overrides.flashModelId ?? (envStr('FLASH_MODEL_ID') || undefined),
+    proModelId: overrides.proModelId ?? (envStr('PRO_MODEL_ID') || undefined),
+    dockerSandbox: overrides.dockerSandbox ?? envBool('DOCKER_SANDBOX'),
+  };
+  return cfg;
+}
+
+function envFloat(name: string): number | undefined {
+  const n = Number(process.env[name]);
+  return Number.isFinite(n) ? n : undefined;
+}
+
+function envList(name: string): string[] | undefined {
+  const raw = process.env[name];
+  if (!raw) return undefined;
+  return raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+}

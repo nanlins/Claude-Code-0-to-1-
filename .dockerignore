@@ -1,0 +1,27 @@
+# 构建上下文排除（减小镜像 + 加快构建）
+node_modules/
+dist/
+.env
+.memory/
+.tasks/
+.team/
+.worktrees/
+.transcripts/
+.task_outputs/
+.cron/
+.audit/
+.vector_index/
+.git/
+*.log
+*.tgz
+test_*.mts
+gen_*.cjs
+*.pdf
+hello.md
+hello-deepseek.py
+demo.md
+pgvector.html
+.audit/
+docs/
+tests/
+.github/
