@@ -44,3 +44,4 @@ news_out.txt
 test_terminal.js
 patch.mjs
 patch2.mjs
+.gitignore：Git 排除规则(保护密钥)
