@@ -46,7 +46,6 @@ G2 规则匹配   只读工具放行；bash 用规则分类器（SAFE_READ_CMD /
 G3 审批       ask 模式 → 终端 y/N（REPL 复用同一 readline）
              auto 模式 → 规则内放行 / deny 模式 → 一律拒绝
 ```
-
 纵深防御：即使权限层被绕过，`Sandbox` 仍会做 deny 检查、路径约束、超时、输出上限；
 `SANDBOX_CMD` 可以把命令整体送进 docker/WSL。
 
